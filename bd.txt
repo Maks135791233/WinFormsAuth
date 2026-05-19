@@ -1,0 +1,83 @@
+Создать родительскую таблицу:
+create table product
+(
+    id_product serial not null primary key,
+    name_product varchar(50) not null,
+	cost_product decimal (12,2) not null
+);
+
+Заполнить таблицу:
+insert into product (name_product, cost_product)
+values ('Закваска сметанная', 45.00),
+('Кефир 2,5% 900г.', 80.00),
+('Кефир 3,2% 900г.', 82.00),
+('Молоко 2,5% 900г.', 70.00),
+('Молоко 3,2% 900г.', 76.00),
+('Молоко нормализованное', 34.00),
+('Сметана классическая 15% 540г.', 89.00),
+('Сметана классическая 15% 540г.', 92.00);
+
+Проверка:
+select * from product;
+
+Создать дочернюю таблицу:
+create table proizvodstvo
+(
+	id_proizvodstvo serial not null primary key,
+	nomer varchar (10) not null,
+	data_proizvodstvo date not null,
+	ispolnitel_id int not null references ispolnitel (id_ispolnitel)
+);
+
+Заполнить дочернюю таблицу
+insert into proizvodstvo (nomer, data_proizvodstvo, ispolnitel_id)
+values ('1', '2025-06-09', 1);
+
+
+
+JSON: Переименовать файл в data и перенести в папку Диск С -> Programm Files -> Postgres SQL -> 18 -> data -> tmp
+Создаем таблицу с типами: create table zakazchik
+(
+	id_zakazchik text not null primary key,
+	name_zakazchik varchar (100) not null,
+	inn varchar (20) null,
+	addres text not null,
+	phone varchar (18) not null,
+	salesman bool not null,
+	buyer bool not null
+);
+
+Запрос:
+insert into zakazchik (id_zakazchik, name_zakazchik, inn, addres, phone, salesman,
+buyer)
+select * from json_table (
+pg_read_file('tmp/data.json')::jsonb,
+'$[*]' columns (
+id_zakazchik text path '$.id',
+name_zakazchik text path '$.name',
+inn text path '$.inn',
+addres text path '$.addres',
+phone text path '$.phone',
+salesman bool path '$.salesman',
+buyer bool path '$.buyer'
+)
+);
+
+Вывести данные (создать запрос, который позволит вычислить полную стоимость заказа покупателя с учетом следующей информации:
+Количество продукции в заказе
+стоимость всех материалов, использованных для производства данной продукции (учитывая норму расхода)
+select 
+	name_zakazchick,
+	zakaz.nomer,
+	sum(sostav_zakaza.kol_vo),
+	itog,
+	string_agg(name_product, ', ')
+from zakazchick
+inner join zakaz on id_zakazchick = zakazchick_id
+inner join sostav_zakaza on id_zakaz = zakaz_id
+inner join product on id_product = product_id
+
+group by
+	name_zakazchick, zakaz.nomer, itog;
+
+https://github.com/sa-teach/WinFormsAuth
